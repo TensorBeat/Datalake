@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/TensorBeat/Datalake/internal/controller"
+	"github.com/TensorBeat/Datalake/internal/repository"
 	"github.com/TensorBeat/Datalake/pkg/proto"
 	"github.com/joho/godotenv"
 
@@ -22,23 +23,24 @@ import (
 func main() {
 
 	//Setup Logging
-	logger, err := zap.NewProduction()
+	loggerMgr, err := zap.NewDevelopment()
 
 	if err != nil {
 		log.Fatalf("Couldn't start zap logger: %v", err)
 	}
 
-	defer logger.Sync() // flushes buffer, if any
-	sugar := logger.Sugar()
+	defer loggerMgr.Sync() // flushes buffer, if any
+	logger := loggerMgr.Sugar()
 
 	//Dotenv
 	err = godotenv.Load("../../.env") // .env in base directory
 	if err != nil {
-		sugar.Warnf("No .env loaded: %v", err)
+		logger.Warnf("No .env loaded: %v", err)
 	}
 
-	listenAddress := ":" + os.Getenv("DL_PORT")
+	ListenAddress := ":" + os.Getenv("PORT")
 	MongoURI := os.Getenv("MONGO_URI")
+	IsProduction := os.Getenv("PRODUCTION") == "true"
 
 	ctx := context.Background()
 
@@ -46,34 +48,54 @@ func main() {
 	defer cancel()
 	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(MongoURI))
 	if err != nil {
-		sugar.Fatalf("Couldn't connect to mongo: %v", err)
+		logger.Fatalf("Couldn't connect to mongo: %v", err)
 	}
 	defer mongoClient.Disconnect(ctx)
 
 	err = mongoClient.Ping(ctx, readpref.Primary())
 	if err != nil {
-		sugar.Fatalf("Couldn't ping mongo: %v", err)
+		logger.Fatalf("Couldn't ping mongo: %v", err)
 	}
 
-	listener, err := net.Listen("tcp", listenAddress)
+	var dbName string
+	if IsProduction {
+		dbName = "prod"
+	} else {
+		dbName = "test"
+	}
+	repository := repository.NewMongoRepository(mongoClient, logger, dbName)
+
+	listener, err := net.Listen("tcp", ListenAddress)
 	if err != nil {
-		sugar.Fatalf("Unable to listen on %v: %v", listenAddress, err)
+		logger.Fatalf("Unable to listen on %v: %v", ListenAddress, err)
 	}
 	defer listener.Close()
 
 	grpcServer := grpc.NewServer()
 	defer grpcServer.Stop()
 
-	datalakeService := &controller.DatalakeServiceServer{}
+	datalakeService := controller.NewDatalakeServiceServer(repository, logger)
 	proto.RegisterDatalakeServiceServer(grpcServer, datalakeService)
+
+	// TODO: Example to seed data - should be a unit-test at somepoint
+	// datalakeService.AddSongs(ctx, &proto.AddSongsRequest{
+	// 	Songs: []*proto.File{
+	// 		{
+	// 			Uri: "gs://test-tensorbeat-songs/song.mp3",
+	// 			Metadata: map[string]string{
+	// 				"genre": "unknown",
+	// 			},
+	// 		},
+	// 	},
+	// })
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
-			sugar.Fatalf("Failed to serve: %v", err)
+			logger.Fatalf("Failed to serve: %v", err)
 		}
 	}()
 
-	sugar.Infof("Server succesfully started on %v", listenAddress)
+	logger.Infof("Server succesfully started on %v", ListenAddress)
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
