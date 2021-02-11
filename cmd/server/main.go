@@ -17,13 +17,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
 
 func main() {
 
 	//Setup Logging
-	loggerMgr, err := zap.NewDevelopment()
+	config := zap.NewDevelopmentConfig()
+	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	config.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
+	loggerMgr, err := config.Build()
 
 	if err != nil {
 		log.Fatalf("Couldn't start zap logger: %v", err)
@@ -33,7 +37,7 @@ func main() {
 	logger := loggerMgr.Sugar()
 
 	//Dotenv
-	err = godotenv.Load("../../.env") // .env in base directory
+	err = godotenv.Load(".env") // .env in base directory
 	if err != nil {
 		logger.Warnf("No .env loaded: %v", err)
 	}
@@ -88,6 +92,14 @@ func main() {
 	// 		},
 	// 	},
 	// })
+
+	// TODO: Example get data - should be a unit-test at somepoint
+	// res, err := datalakeService.GetSongs(ctx, &proto.GetSongsRequest{
+	// 	Metadata: map[string]string{
+	// 		"genre": "unknown",
+	// 	},
+	// })
+	// logger.Infof("%v", res)
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {

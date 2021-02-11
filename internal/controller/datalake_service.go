@@ -22,14 +22,32 @@ func NewDatalakeServiceServer(repo repository.Repository, logger *zap.SugaredLog
 }
 
 func (s *DatalakeServiceServer) GetSongs(ctx context.Context, req *proto.GetSongsRequest) (*proto.GetSongsResponse, error) {
-	panic("not implemented") // TODO: Implement
+
+	var songs []*proto.File
+	var err error
+
+	if len(req.Metadata) > 0 {
+		songs, err = s.repo.GetSongsByMetadata(ctx, req.Metadata)
+	} else {
+		songs, err = s.repo.GetSongs(ctx)
+	}
+
+	if err != nil {
+		s.logger.Errorf("Failed to get songs: %v", err)
+		return nil, err
+	}
+
+	res := &proto.GetSongsResponse{
+		Songs: songs,
+	}
+	return res, nil
 }
 
 func (s *DatalakeServiceServer) AddSongs(ctx context.Context, req *proto.AddSongsRequest) (*proto.AddSongsResponse, error) {
 	err := s.repo.AddSongs(ctx, req.Songs)
 
 	if err != nil {
-		s.logger.Error("Failed to add songs")
+		s.logger.Errorf("Failed to add songs: %v", err)
 		res := &proto.AddSongsResponse{
 			Successful: false,
 		}

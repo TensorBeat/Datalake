@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/TensorBeat/Datalake/pkg/proto"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -52,9 +53,44 @@ func (r *MongoRepository) AddSongs(ctx context.Context, songs []*proto.File) err
 }
 
 func (r *MongoRepository) GetSongsByMetadata(ctx context.Context, metadata map[string]string) ([]*proto.File, error) {
-	panic("not implemented") // TODO: Implement
+
+	metadataEntries := make([]bson.M, 0)
+
+	for k, v := range metadata {
+		filterEntry := bson.M{k: v}
+		metadataEntries = append(metadataEntries, filterEntry)
+	}
+
+	filter := bson.M{
+		"metadata": bson.M{
+			"$in": metadataEntries,
+		},
+	}
+	return r.getSongs(ctx, filter)
 }
 
 func (r *MongoRepository) GetSongs(ctx context.Context) ([]*proto.File, error) {
-	panic("not implemented") // TODO: Implement
+
+	return r.getSongs(ctx, bson.M{})
+
+}
+
+func (r *MongoRepository) getSongs(ctx context.Context, filter bson.M) ([]*proto.File, error) {
+	cur, err := r.songCollection.Find(ctx, filter)
+	if err != nil {
+		r.logger.Errorf("Failed to find songs in mongo: %v", err)
+		return nil, err
+	}
+
+	songs := make([]*proto.File, 0)
+
+	cur.All(ctx, &songs)
+	if err != nil {
+		r.logger.Errorf("Failed to get songs in mongo: %v", err)
+		return nil, err
+	}
+
+	r.logger.Debugf("Songs: %v", songs)
+
+	return songs, nil
 }
