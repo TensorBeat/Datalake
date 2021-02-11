@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tensorbeat
+  name: test-datalake
+spec:
+  selector:
+    matchLabels:
+      app: test-datalake
+  template:
+    metadata:
+      labels:
+        app: test-datalake
+    spec:
+      containers:
+      - name: datalake
+        image: gcr.io/rowan-senior-project/tensorbeat-datalake:v0.1.0
+        env:
+          - name: PORT
+            value: "9091"
+          - name: MONGO_URI
+            valueFrom:
+              secretKeyRef:
+                name: mongo-uri
+                key: mongo-uri
+          - name: PRODUCTION
+            value: "false"
+        ports:
+        - containerPort: 9091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-datalake
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 35.188.110.142
+  selector:
+    app: test-datalake
+  ports:
+  - port: 9091
