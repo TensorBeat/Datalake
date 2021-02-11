@@ -1,13 +1,13 @@
 # ARGS:
 # V: version - ex: v1.0.0
 
-.DEFAULT_GOAL=build_bin
+.DEFAULT_GOAL=build
 
-build_bin:
+build:
 	go build -o bin/server ./cmd/server 
 
-build_docker:
+docker_build:
 	docker build -t gcr.io/rowan-senior-project/tensorbeat-datalake:$(V) .
 
-push_docker: build_docker
+docker_push: docker_build
 	docker push gcr.io/rowan-senior-project/tensorbeat-datalake:$(V)
