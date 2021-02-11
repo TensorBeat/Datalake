@@ -23,8 +23,8 @@ spec:
               secretKeyRef:
                 name: mongo-uri
                 key: mongo-uri
-          - name: PRODUCTION
-            value: "false"
+          - name: ENVIRONMENT
+            value: "test"
         ports:
         - containerPort: 9091
 ---
