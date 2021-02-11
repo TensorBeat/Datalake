@@ -40,7 +40,7 @@ func main() {
 
 	ListenAddress := ":" + os.Getenv("PORT")
 	MongoURI := os.Getenv("MONGO_URI")
-	IsProduction := os.Getenv("PRODUCTION") == "true"
+	IsProduction := os.Getenv("ENVIRONMENT") == "prod"
 
 	ctx := context.Background()
 
