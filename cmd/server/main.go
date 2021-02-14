@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -80,6 +81,7 @@ func main() {
 
 	datalakeService := controller.NewDatalakeServiceServer(repository, logger)
 	proto.RegisterDatalakeServiceServer(grpcServer, datalakeService)
+	reflection.Register(grpcServer)
 
 	// TODO: Example to seed data - should be a unit-test at somepoint
 	// datalakeService.AddSongs(ctx, &proto.AddSongsRequest{

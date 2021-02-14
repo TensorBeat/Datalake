@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: datalake
-        image: gcr.io/rowan-senior-project/tensorbeat-datalake:v0.2.0
+        image: gcr.io/rowan-senior-project/tensorbeat-datalake:v0.2.2
         env:
           - name: PORT
             value: "9090"
@@ -33,9 +33,13 @@ kind: Service
 metadata:
   name: datalake
 spec:
-  type: LoadBalancer
-  loadBalancerIP: 35.188.110.142
+  type: ClusterIP
   selector:
     app: datalake
   ports:
+  - port: 9091
+    targetPort: 9090
+    name: grpc-web
   - port: 9090
+    targetPort: 9090
+    name: grpc
