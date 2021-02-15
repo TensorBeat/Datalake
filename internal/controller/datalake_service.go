@@ -26,8 +26,8 @@ func (s *DatalakeServiceServer) GetSongs(ctx context.Context, req *proto.GetSong
 	var songs []*proto.File
 	var err error
 
-	if len(req.Metadata) > 0 {
-		songs, err = s.repo.GetSongsByMetadata(ctx, req.Metadata)
+	if len(req.Tags) > 0 {
+		songs, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Operator)
 	} else {
 		songs, err = s.repo.GetSongs(ctx)
 	}
@@ -58,4 +58,12 @@ func (s *DatalakeServiceServer) AddSongs(ctx context.Context, req *proto.AddSong
 		Successful: true,
 	}
 	return res, nil
+}
+
+func (s *DatalakeServiceServer) AddTags(ctx context.Context, req *proto.AddTagsRequest) (*proto.AddTagsResponse, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (s *DatalakeServiceServer) RemoveTags(ctx context.Context, req *proto.RemoveTagsRequest) (*proto.RemoveTagsResponse, error) {
+	panic("not implemented") // TODO: Implement
 }

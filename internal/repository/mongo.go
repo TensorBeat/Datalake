@@ -32,7 +32,7 @@ func NewMongoRepository(client *mongo.Client, logger *zap.SugaredLogger, databas
 	}
 }
 
-func (r *MongoRepository) AddSongs(ctx context.Context, songs []*proto.File) error {
+func (r *MongoRepository) AddSongs(ctx context.Context, songs []*proto.AddFile) error {
 
 	documents := make([]interface{}, len(songs))
 	for i := range songs {
@@ -52,18 +52,31 @@ func (r *MongoRepository) AddSongs(ctx context.Context, songs []*proto.File) err
 
 }
 
-func (r *MongoRepository) GetSongsByMetadata(ctx context.Context, metadata map[string]string) ([]*proto.File, error) {
+func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.LogicalOperator) ([]*proto.File, error) {
 
-	metadataEntries := make([]bson.M, 0)
+	tagsEntries := make([]bson.M, len(tags))
 
-	for k, v := range metadata {
+	for k, v := range tags {
 		filterEntry := bson.M{k: v}
-		metadataEntries = append(metadataEntries, filterEntry)
+		tagsEntries = append(tagsEntries, filterEntry)
+	}
+
+	var filterExpression string
+
+	switch operator {
+	case proto.LogicalOperator_OR:
+		filterExpression = "$in"
+	case proto.LogicalOperator_NOT:
+		filterExpression = "$nin"
+
+	//TODO: implement AND
+	default:
+		filterExpression = "$in"
 	}
 
 	filter := bson.M{
-		"metadata": bson.M{
-			"$in": metadataEntries,
+		"tags": bson.M{
+			filterExpression: tagsEntries,
 		},
 	}
 	return r.getSongs(ctx, filter)
