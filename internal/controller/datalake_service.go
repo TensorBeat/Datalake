@@ -21,9 +21,50 @@ func NewDatalakeServiceServer(repo repository.Repository, logger *zap.SugaredLog
 	}
 }
 
+func (s *DatalakeServiceServer) RepoFilesToProtoFiles(repoFiles []*repository.File) []*proto.File {
+	files := make([]*proto.File, len(repoFiles))
+	for _, repoFile := range repoFiles {
+		files = append(files, &proto.File{
+			Id:       repoFile.ID,
+			Name:     repoFile.Name,
+			Uri:      repoFile.Uri,
+			MimeType: repoFile.MimeType,
+			Tags:     repoFile.Tags,
+		})
+	}
+	return files
+}
+
+func (s *DatalakeServiceServer) ProtoFilesToRepoFiles(protoFiles []*proto.File) []*repository.File {
+	files := make([]*repository.File, len(protoFiles))
+	for _, protoFile := range protoFiles {
+		files = append(files, &repository.File{
+			ID:       protoFile.Id,
+			Name:     protoFile.Name,
+			Uri:      protoFile.Uri,
+			MimeType: protoFile.MimeType,
+			Tags:     protoFile.Tags,
+		})
+	}
+	return files
+}
+
+func (s *DatalakeServiceServer) ProtoAddFilesToRepoFiles(protoFiles []*proto.AddFile) []*repository.File {
+	files := make([]*repository.File, len(protoFiles))
+	for _, protoFile := range protoFiles {
+		files = append(files, &repository.File{
+			Name:     protoFile.Name,
+			Uri:      protoFile.Uri,
+			MimeType: protoFile.MimeType,
+			Tags:     protoFile.Tags,
+		})
+	}
+	return files
+}
+
 func (s *DatalakeServiceServer) GetSongs(ctx context.Context, req *proto.GetSongsRequest) (*proto.GetSongsResponse, error) {
 
-	var songs []*proto.File
+	var songs []*repository.File
 	var err error
 
 	if len(req.Tags) > 0 {
@@ -38,13 +79,16 @@ func (s *DatalakeServiceServer) GetSongs(ctx context.Context, req *proto.GetSong
 	}
 
 	res := &proto.GetSongsResponse{
-		Songs: songs,
+		Songs: s.RepoFilesToProtoFiles(songs),
 	}
 	return res, nil
 }
 
 func (s *DatalakeServiceServer) AddSongs(ctx context.Context, req *proto.AddSongsRequest) (*proto.AddSongsResponse, error) {
-	err := s.repo.AddSongs(ctx, req.Songs)
+
+	songs := s.ProtoAddFilesToRepoFiles(req.Songs)
+
+	err := s.repo.AddSongs(ctx, songs)
 
 	if err != nil {
 		s.logger.Errorf("Failed to add songs: %v", err)
