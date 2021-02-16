@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -10,35 +9,23 @@ import (
 
 	"github.com/TensorBeat/Datalake/internal/controller"
 	"github.com/TensorBeat/Datalake/internal/repository"
+	"github.com/TensorBeat/Datalake/internal/util"
 	"github.com/TensorBeat/Datalake/pkg/proto"
 	"github.com/joho/godotenv"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
 
-	//Setup Logging
-	config := zap.NewDevelopmentConfig()
-	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	config.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
-	loggerMgr, err := config.Build()
-
-	if err != nil {
-		log.Fatalf("Couldn't start zap logger: %v", err)
-	}
-
-	defer loggerMgr.Sync() // flushes buffer, if any
-	logger := loggerMgr.Sugar()
+	logger := util.MakeLogger()
 
 	//Dotenv
-	err = godotenv.Load(".env") // .env in base directory
+	err := godotenv.Load(".env") // .env in base directory
 	if err != nil {
 		logger.Warnf("No .env loaded: %v", err)
 	}
