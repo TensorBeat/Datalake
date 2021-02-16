@@ -123,34 +123,34 @@ func (r *MongoRepository) getSongs(ctx context.Context, filter bson.M) ([]*File,
 
 func (r *MongoRepository) MongoFilesToFiles(mongoFiles []*MongoFile) []*File {
 	files := make([]*File, len(mongoFiles))
-	for _, mongoFile := range mongoFiles {
-		files = append(files, &File{
+	for i, mongoFile := range mongoFiles {
+		files[i] = &File{
 			ID:       mongoFile.ID.Hex(),
 			Name:     mongoFile.Name,
 			Uri:      mongoFile.Uri,
 			MimeType: mongoFile.MimeType,
 			Tags:     mongoFile.Tags,
-		})
+		}
 	}
 	return files
 }
 
 func (r *MongoRepository) FilesToMongoFiles(files []*File) []*MongoFile {
 	mongoFiles := make([]*MongoFile, len(files))
-	for _, file := range files {
+	for i, file := range files {
 
 		id, err := primitive.ObjectIDFromHex(file.ID)
 		if err != nil {
 			r.logger.Errorf("Couldn't convert file interface to mongofile due to bad ID: %v", err)
 			continue
 		}
-		mongoFiles = append(mongoFiles, &MongoFile{
+		mongoFiles[i] = &MongoFile{
 			ID:       id,
 			Name:     file.Name,
 			Uri:      file.Uri,
 			MimeType: file.MimeType,
 			Tags:     file.Tags,
-		})
+		}
 	}
 	return mongoFiles
 }

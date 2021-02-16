@@ -23,41 +23,41 @@ func NewDatalakeServiceServer(repo repository.Repository, logger *zap.SugaredLog
 
 func (s *DatalakeServiceServer) RepoFilesToProtoFiles(repoFiles []*repository.File) []*proto.File {
 	files := make([]*proto.File, len(repoFiles))
-	for _, repoFile := range repoFiles {
-		files = append(files, &proto.File{
+	for i, repoFile := range repoFiles {
+		files[i] = &proto.File{
 			Id:       repoFile.ID,
 			Name:     repoFile.Name,
 			Uri:      repoFile.Uri,
 			MimeType: repoFile.MimeType,
 			Tags:     repoFile.Tags,
-		})
+		}
 	}
 	return files
 }
 
 func (s *DatalakeServiceServer) ProtoFilesToRepoFiles(protoFiles []*proto.File) []*repository.File {
 	files := make([]*repository.File, len(protoFiles))
-	for _, protoFile := range protoFiles {
-		files = append(files, &repository.File{
+	for i, protoFile := range protoFiles {
+		files[i] = &repository.File{
 			ID:       protoFile.Id,
 			Name:     protoFile.Name,
 			Uri:      protoFile.Uri,
 			MimeType: protoFile.MimeType,
 			Tags:     protoFile.Tags,
-		})
+		}
 	}
 	return files
 }
 
 func (s *DatalakeServiceServer) ProtoAddFilesToRepoFiles(protoFiles []*proto.AddFile) []*repository.File {
 	files := make([]*repository.File, len(protoFiles))
-	for _, protoFile := range protoFiles {
-		files = append(files, &repository.File{
+	for i, protoFile := range protoFiles {
+		files[i] = &repository.File{
 			Name:     protoFile.Name,
 			Uri:      protoFile.Uri,
 			MimeType: protoFile.MimeType,
 			Tags:     protoFile.Tags,
-		})
+		}
 	}
 	return files
 }

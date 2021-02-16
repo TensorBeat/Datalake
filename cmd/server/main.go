@@ -83,11 +83,7 @@ func main() {
 	// })
 
 	// TODO: Example get data - should be a unit-test at somepoint
-	// res, err := datalakeService.GetSongs(ctx, &proto.GetSongsRequest{
-	// 	Metadata: map[string]string{
-	// 		"genre": "unknown",
-	// 	},
-	// })
+	// res, err := datalakeService.GetSongs(ctx, &proto.GetSongsRequest{})
 	// logger.Infof("%v", res)
 
 	go func() {
