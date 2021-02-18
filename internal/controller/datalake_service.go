@@ -62,23 +62,54 @@ func (s *DatalakeServiceServer) ProtoAddFilesToRepoFiles(protoFiles []*proto.Add
 	return files
 }
 
-func (s *DatalakeServiceServer) GetSongs(ctx context.Context, req *proto.GetSongsRequest) (*proto.GetSongsResponse, error) {
+func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetAllSongsRequest) (*proto.GetAllSongsResponse, error) {
 
 	var songs []*repository.File
 	var err error
 
-	if len(req.Tags) > 0 {
-		songs, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Operator)
-	} else {
-		songs, err = s.repo.GetSongs(ctx)
-	}
+	songs, err = s.repo.GetSongs(ctx)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
 		return nil, err
 	}
 
-	res := &proto.GetSongsResponse{
+	res := &proto.GetAllSongsResponse{
+		Songs: s.RepoFilesToProtoFiles(songs),
+	}
+	return res, nil
+}
+
+func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.GetSongsByIDsRequest) (*proto.GetSongsByIDsResponse, error) {
+	var songs []*repository.File
+	var err error
+
+	songs, err = s.repo.GetSongsByIDs(ctx, req.Ids)
+
+	if err != nil {
+		s.logger.Errorf("Failed to get songs: %v", err)
+		return nil, err
+	}
+
+	res := &proto.GetSongsByIDsResponse{
+		Songs: s.RepoFilesToProtoFiles(songs),
+	}
+	return res, nil
+}
+
+func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.GetSongsByTagsRequest) (*proto.GetSongsByTagsResponse, error) {
+
+	var songs []*repository.File
+	var err error
+
+	songs, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Filter)
+
+	if err != nil {
+		s.logger.Errorf("Failed to get songs: %v", err)
+		return nil, err
+	}
+
+	res := &proto.GetSongsByTagsResponse{
 		Songs: s.RepoFilesToProtoFiles(songs),
 	}
 	return res, nil
@@ -105,9 +136,9 @@ func (s *DatalakeServiceServer) AddSongs(ctx context.Context, req *proto.AddSong
 }
 
 func (s *DatalakeServiceServer) AddTags(ctx context.Context, req *proto.AddTagsRequest) (*proto.AddTagsResponse, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, nil // TODO: Implement
 }
 
 func (s *DatalakeServiceServer) RemoveTags(ctx context.Context, req *proto.RemoveTagsRequest) (*proto.RemoveTagsResponse, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, nil // TODO: Implement
 }

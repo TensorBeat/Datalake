@@ -20,6 +20,7 @@ type Repository interface {
 
 type SongRepository interface {
 	AddSongs(ctx context.Context, songs []*File) error
-	GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.LogicalOperator) ([]*File, error)
+	GetSongsByTags(ctx context.Context, tags map[string]string, filter proto.Filter) ([]*File, error)
+	GetSongsByIDs(ctx context.Context, ids []string) ([]*File, error)
 	GetSongs(ctx context.Context) ([]*File, error)
 }

@@ -83,8 +83,8 @@ func main() {
 	// })
 
 	// TODO: Example get data - should be a unit-test at somepoint
-	// res, err := datalakeService.GetSongs(ctx, &proto.GetSongsRequest{})
-	// logger.Infof("%v", res)
+	res, err := datalakeService.GetSongsByIDs(ctx, &proto.GetSongsByIDsRequest{Ids: []string{"602b29014accf1b3f3d462d0"}})
+	logger.Infof("%v", res)
 
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {

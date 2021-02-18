@@ -63,7 +63,7 @@ func (r *MongoRepository) AddSongs(ctx context.Context, songs []*File) error {
 
 }
 
-func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.LogicalOperator) ([]*File, error) {
+func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.Filter) ([]*File, error) {
 
 	tagsEntries := make([]bson.M, len(tags))
 
@@ -75,22 +75,39 @@ func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]st
 	var filterExpression string
 
 	switch operator {
-	case proto.LogicalOperator_OR:
+	case proto.Filter_ANY:
 		filterExpression = "$in"
-	case proto.LogicalOperator_NOT:
+	case proto.Filter_NONE:
 		filterExpression = "$nin"
 
-	//TODO: implement AND
+	//TODO: implement ALL
 	default:
 		filterExpression = "$in"
 	}
 
-	filter := bson.M{
+	query := bson.M{
 		"tags": bson.M{
 			filterExpression: tagsEntries,
 		},
 	}
-	return r.getSongs(ctx, filter)
+	return r.getSongs(ctx, query)
+}
+
+func (r *MongoRepository) GetSongsByIDs(ctx context.Context, ids []string) ([]*File, error) {
+	mongoIDs := make([]primitive.ObjectID, len(ids))
+
+	for i := range mongoIDs {
+		id, err := primitive.ObjectIDFromHex(ids[i])
+		if err != nil {
+			r.logger.Errorf("bad ID: %v", err)
+			return nil, err
+		}
+		mongoIDs[i] = id
+	}
+
+	query := bson.M{"_id": bson.M{"$in": mongoIDs}}
+
+	return r.getSongs(ctx, query)
 }
 
 func (r *MongoRepository) GetSongs(ctx context.Context) ([]*File, error) {
@@ -99,8 +116,8 @@ func (r *MongoRepository) GetSongs(ctx context.Context) ([]*File, error) {
 
 }
 
-func (r *MongoRepository) getSongs(ctx context.Context, filter bson.M) ([]*File, error) {
-	cur, err := r.songCollection.Find(ctx, filter)
+func (r *MongoRepository) getSongs(ctx context.Context, query bson.M) ([]*File, error) {
+	cur, err := r.songCollection.Find(ctx, query)
 	if err != nil {
 		r.logger.Errorf("Failed to find songs in mongo: %v", err)
 		return nil, err
@@ -136,21 +153,21 @@ func (r *MongoRepository) MongoFilesToFiles(mongoFiles []*MongoFile) []*File {
 }
 
 func (r *MongoRepository) FilesToMongoFiles(files []*File) []*MongoFile {
-	mongoFiles := make([]*MongoFile, len(files))
-	for i, file := range files {
+	mongoFiles := make([]*MongoFile, 0)
+	for _, file := range files {
 
 		id, err := primitive.ObjectIDFromHex(file.ID)
 		if err != nil {
-			r.logger.Errorf("Couldn't convert file interface to mongofile due to bad ID: %v", err)
+			r.logger.Errorf("Couldn't convert file interface to mongofile due to bad ID, skipping entry: %v", err)
 			continue
 		}
-		mongoFiles[i] = &MongoFile{
+		mongoFiles = append(mongoFiles, &MongoFile{
 			ID:       id,
 			Name:     file.Name,
 			Uri:      file.Uri,
 			MimeType: file.MimeType,
 			Tags:     file.Tags,
-		}
+		})
 	}
 	return mongoFiles
 }
