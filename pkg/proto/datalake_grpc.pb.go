@@ -11,15 +11,18 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // DatalakeServiceClient is the client API for DatalakeService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DatalakeServiceClient interface {
-	GetSongs(ctx context.Context, in *GetSongsRequest, opts ...grpc.CallOption) (*GetSongsResponse, error)
+	GetAllSongs(ctx context.Context, in *GetAllSongsRequest, opts ...grpc.CallOption) (*GetAllSongsResponse, error)
+	GetSongsByIDs(ctx context.Context, in *GetSongsByIDsRequest, opts ...grpc.CallOption) (*GetSongsByIDsResponse, error)
+	GetSongsByTags(ctx context.Context, in *GetSongsByTagsRequest, opts ...grpc.CallOption) (*GetSongsByTagsResponse, error)
 	AddSongs(ctx context.Context, in *AddSongsRequest, opts ...grpc.CallOption) (*AddSongsResponse, error)
+	AddTags(ctx context.Context, in *AddTagsRequest, opts ...grpc.CallOption) (*AddTagsResponse, error)
+	RemoveTags(ctx context.Context, in *RemoveTagsRequest, opts ...grpc.CallOption) (*RemoveTagsResponse, error)
 }
 
 type datalakeServiceClient struct {
@@ -30,9 +33,27 @@ func NewDatalakeServiceClient(cc grpc.ClientConnInterface) DatalakeServiceClient
 	return &datalakeServiceClient{cc}
 }
 
-func (c *datalakeServiceClient) GetSongs(ctx context.Context, in *GetSongsRequest, opts ...grpc.CallOption) (*GetSongsResponse, error) {
-	out := new(GetSongsResponse)
-	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/GetSongs", in, out, opts...)
+func (c *datalakeServiceClient) GetAllSongs(ctx context.Context, in *GetAllSongsRequest, opts ...grpc.CallOption) (*GetAllSongsResponse, error) {
+	out := new(GetAllSongsResponse)
+	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/GetAllSongs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datalakeServiceClient) GetSongsByIDs(ctx context.Context, in *GetSongsByIDsRequest, opts ...grpc.CallOption) (*GetSongsByIDsResponse, error) {
+	out := new(GetSongsByIDsResponse)
+	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/GetSongsByIDs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datalakeServiceClient) GetSongsByTags(ctx context.Context, in *GetSongsByTagsRequest, opts ...grpc.CallOption) (*GetSongsByTagsResponse, error) {
+	out := new(GetSongsByTagsResponse)
+	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/GetSongsByTags", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +69,34 @@ func (c *datalakeServiceClient) AddSongs(ctx context.Context, in *AddSongsReques
 	return out, nil
 }
 
+func (c *datalakeServiceClient) AddTags(ctx context.Context, in *AddTagsRequest, opts ...grpc.CallOption) (*AddTagsResponse, error) {
+	out := new(AddTagsResponse)
+	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/AddTags", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datalakeServiceClient) RemoveTags(ctx context.Context, in *RemoveTagsRequest, opts ...grpc.CallOption) (*RemoveTagsResponse, error) {
+	out := new(RemoveTagsResponse)
+	err := c.cc.Invoke(ctx, "/tensorbeat.datalake.DatalakeService/RemoveTags", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatalakeServiceServer is the server API for DatalakeService service.
 // All implementations must embed UnimplementedDatalakeServiceServer
 // for forward compatibility
 type DatalakeServiceServer interface {
-	GetSongs(context.Context, *GetSongsRequest) (*GetSongsResponse, error)
+	GetAllSongs(context.Context, *GetAllSongsRequest) (*GetAllSongsResponse, error)
+	GetSongsByIDs(context.Context, *GetSongsByIDsRequest) (*GetSongsByIDsResponse, error)
+	GetSongsByTags(context.Context, *GetSongsByTagsRequest) (*GetSongsByTagsResponse, error)
 	AddSongs(context.Context, *AddSongsRequest) (*AddSongsResponse, error)
+	AddTags(context.Context, *AddTagsRequest) (*AddTagsResponse, error)
+	RemoveTags(context.Context, *RemoveTagsRequest) (*RemoveTagsResponse, error)
 	mustEmbedUnimplementedDatalakeServiceServer()
 }
 
@@ -61,11 +104,23 @@ type DatalakeServiceServer interface {
 type UnimplementedDatalakeServiceServer struct {
 }
 
-func (UnimplementedDatalakeServiceServer) GetSongs(context.Context, *GetSongsRequest) (*GetSongsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSongs not implemented")
+func (UnimplementedDatalakeServiceServer) GetAllSongs(context.Context, *GetAllSongsRequest) (*GetAllSongsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllSongs not implemented")
+}
+func (UnimplementedDatalakeServiceServer) GetSongsByIDs(context.Context, *GetSongsByIDsRequest) (*GetSongsByIDsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSongsByIDs not implemented")
+}
+func (UnimplementedDatalakeServiceServer) GetSongsByTags(context.Context, *GetSongsByTagsRequest) (*GetSongsByTagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSongsByTags not implemented")
 }
 func (UnimplementedDatalakeServiceServer) AddSongs(context.Context, *AddSongsRequest) (*AddSongsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddSongs not implemented")
+}
+func (UnimplementedDatalakeServiceServer) AddTags(context.Context, *AddTagsRequest) (*AddTagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTags not implemented")
+}
+func (UnimplementedDatalakeServiceServer) RemoveTags(context.Context, *RemoveTagsRequest) (*RemoveTagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTags not implemented")
 }
 func (UnimplementedDatalakeServiceServer) mustEmbedUnimplementedDatalakeServiceServer() {}
 
@@ -77,23 +132,59 @@ type UnsafeDatalakeServiceServer interface {
 }
 
 func RegisterDatalakeServiceServer(s grpc.ServiceRegistrar, srv DatalakeServiceServer) {
-	s.RegisterService(&DatalakeService_ServiceDesc, srv)
+	s.RegisterService(&_DatalakeService_serviceDesc, srv)
 }
 
-func _DatalakeService_GetSongs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSongsRequest)
+func _DatalakeService_GetAllSongs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllSongsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DatalakeServiceServer).GetSongs(ctx, in)
+		return srv.(DatalakeServiceServer).GetAllSongs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tensorbeat.datalake.DatalakeService/GetSongs",
+		FullMethod: "/tensorbeat.datalake.DatalakeService/GetAllSongs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DatalakeServiceServer).GetSongs(ctx, req.(*GetSongsRequest))
+		return srv.(DatalakeServiceServer).GetAllSongs(ctx, req.(*GetAllSongsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DatalakeService_GetSongsByIDs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSongsByIDsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatalakeServiceServer).GetSongsByIDs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tensorbeat.datalake.DatalakeService/GetSongsByIDs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatalakeServiceServer).GetSongsByIDs(ctx, req.(*GetSongsByIDsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DatalakeService_GetSongsByTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSongsByTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatalakeServiceServer).GetSongsByTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tensorbeat.datalake.DatalakeService/GetSongsByTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatalakeServiceServer).GetSongsByTags(ctx, req.(*GetSongsByTagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -116,20 +207,69 @@ func _DatalakeService_AddSongs_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-// DatalakeService_ServiceDesc is the grpc.ServiceDesc for DatalakeService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var DatalakeService_ServiceDesc = grpc.ServiceDesc{
+func _DatalakeService_AddTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatalakeServiceServer).AddTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tensorbeat.datalake.DatalakeService/AddTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatalakeServiceServer).AddTags(ctx, req.(*AddTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DatalakeService_RemoveTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatalakeServiceServer).RemoveTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tensorbeat.datalake.DatalakeService/RemoveTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatalakeServiceServer).RemoveTags(ctx, req.(*RemoveTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _DatalakeService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "tensorbeat.datalake.DatalakeService",
 	HandlerType: (*DatalakeServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetSongs",
-			Handler:    _DatalakeService_GetSongs_Handler,
+			MethodName: "GetAllSongs",
+			Handler:    _DatalakeService_GetAllSongs_Handler,
+		},
+		{
+			MethodName: "GetSongsByIDs",
+			Handler:    _DatalakeService_GetSongsByIDs_Handler,
+		},
+		{
+			MethodName: "GetSongsByTags",
+			Handler:    _DatalakeService_GetSongsByTags_Handler,
 		},
 		{
 			MethodName: "AddSongs",
 			Handler:    _DatalakeService_AddSongs_Handler,
+		},
+		{
+			MethodName: "AddTags",
+			Handler:    _DatalakeService_AddTags_Handler,
+		},
+		{
+			MethodName: "RemoveTags",
+			Handler:    _DatalakeService_RemoveTags_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
