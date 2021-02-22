@@ -70,22 +70,6 @@ func main() {
 	proto.RegisterDatalakeServiceServer(grpcServer, datalakeService)
 	reflection.Register(grpcServer)
 
-	// TODO: Example to seed data - should be a unit-test at somepoint
-	// datalakeService.AddSongs(ctx, &proto.AddSongsRequest{
-	// 	Songs: []*proto.File{
-	// 		{
-	// 			Uri: "gs://test-tensorbeat-songs/song.mp3",
-	// 			Metadata: map[string]string{
-	// 				"genre": "unknown",
-	// 			},
-	// 		},
-	// 	},
-	// })
-
-	// TODO: Example get data - should be a unit-test at somepoint
-	// res, err := datalakeService.GetSongsByIDs(ctx, &proto.GetSongsByIDsRequest{Ids: []string{"602b29014accf1b3f3d462d0"}})
-	// logger.Infof("%v", res)
-
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
 			logger.Fatalf("Failed to serve: %v", err)

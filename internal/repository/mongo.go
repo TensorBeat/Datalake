@@ -12,6 +12,8 @@ import (
 
 const (
 	songCollectionName = "songs"
+	tagsKey            = "tags"
+	existsCharacter    = "*"
 )
 
 type MongoFile struct {
@@ -65,31 +67,42 @@ func (r *MongoRepository) AddSongs(ctx context.Context, songs []*File) error {
 
 func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.Filter) ([]*File, error) {
 
-	tagsEntries := make([]bson.M, len(tags))
+	tagsEntries := make([]bson.M, 0)
+	for tagName, val := range tags {
 
-	for k, v := range tags {
-		filterEntry := bson.M{k: v}
+		var filterEntry bson.M
+
+		if val == existsCharacter {
+			filterEntry = bson.M{tagsKey + "." + tagName: bson.M{
+				"$exists": true,
+			}}
+		} else {
+			filterEntry = bson.M{tagsKey + "." + tagName: val}
+		}
+
 		tagsEntries = append(tagsEntries, filterEntry)
 	}
 
-	var filterExpression string
-
+	var query bson.M
 	switch operator {
 	case proto.Filter_ANY:
-		filterExpression = "$in"
+		query = bson.M{
+			"$or": tagsEntries,
+		}
+	case proto.Filter_ALL:
+		query = bson.M{
+			"$and": tagsEntries,
+		}
 	case proto.Filter_NONE:
-		filterExpression = "$nin"
-
-	//TODO: implement ALL
+		query = bson.M{
+			"$nor": tagsEntries,
+		}
 	default:
-		filterExpression = "$in"
+		query = bson.M{
+			"$or": tagsEntries,
+		}
 	}
 
-	query := bson.M{
-		"tags": bson.M{
-			filterExpression: tagsEntries,
-		},
-	}
 	return r.getSongs(ctx, query)
 }
 
@@ -110,13 +123,16 @@ func (r *MongoRepository) GetSongsByIDs(ctx context.Context, ids []string) ([]*F
 	return r.getSongs(ctx, query)
 }
 
-func (r *MongoRepository) GetSongs(ctx context.Context) ([]*File, error) {
+func (r *MongoRepository) GetAllSongs(ctx context.Context) ([]*File, error) {
 
 	return r.getSongs(ctx, bson.M{})
 
 }
 
 func (r *MongoRepository) getSongs(ctx context.Context, query bson.M) ([]*File, error) {
+
+	r.logger.Debugf("query: %v", query)
+
 	cur, err := r.songCollection.Find(ctx, query)
 	if err != nil {
 		r.logger.Errorf("Failed to find songs in mongo: %v", err)

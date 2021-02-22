@@ -67,7 +67,7 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 	var songs []*repository.File
 	var err error
 
-	songs, err = s.repo.GetSongs(ctx)
+	songs, err = s.repo.GetAllSongs(ctx)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
