@@ -136,9 +136,36 @@ func (s *DatalakeServiceServer) AddSongs(ctx context.Context, req *proto.AddSong
 }
 
 func (s *DatalakeServiceServer) AddTags(ctx context.Context, req *proto.AddTagsRequest) (*proto.AddTagsResponse, error) {
-	return nil, nil // TODO: Implement
+
+	err := s.repo.AddTags(ctx, req.Id, req.Tags)
+
+	if err != nil {
+		s.logger.Errorf("Failed to add tags: %v", err)
+		res := &proto.AddTagsResponse{
+			Successful: false,
+		}
+		return res, err
+	}
+
+	res := &proto.AddTagsResponse{
+		Successful: true,
+	}
+	return res, nil
 }
 
 func (s *DatalakeServiceServer) RemoveTags(ctx context.Context, req *proto.RemoveTagsRequest) (*proto.RemoveTagsResponse, error) {
-	return nil, nil // TODO: Implement
+	err := s.repo.RemoveTags(ctx, req.Id, req.Tags)
+
+	if err != nil {
+		s.logger.Errorf("Failed to remove tags: %v", err)
+		res := &proto.RemoveTagsResponse{
+			Successful: false,
+		}
+		return res, err
+	}
+
+	res := &proto.RemoveTagsResponse{
+		Successful: true,
+	}
+	return res, nil
 }

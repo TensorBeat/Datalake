@@ -94,3 +94,35 @@ func TestGetSongsByTags(t *testing.T) {
 	logger.Infof("%v", res)
 
 }
+
+func TestAddTags(t *testing.T) {
+
+	logger := zaptest.NewLogger(t).Sugar()
+
+	req := &proto.AddTagsRequest{
+		Id: "60330f9e6fdbdb246a93b7a6",
+		Tags: map[string]string{
+			"heavyness": "heavy",
+		},
+	}
+
+	res, _ := datalakeService.AddTags(ctx, req)
+	logger.Infof("%v", res)
+
+}
+
+func TestRemoveTags(t *testing.T) {
+
+	logger := zaptest.NewLogger(t).Sugar()
+
+	req := &proto.RemoveTagsRequest{
+		Id: "60330f9e6fdbdb246a93b7a6",
+		Tags: map[string]string{
+			"heavyness": "",
+		},
+	}
+
+	res, _ := datalakeService.RemoveTags(ctx, req)
+	logger.Infof("%v", res)
+
+}

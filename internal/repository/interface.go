@@ -23,4 +23,6 @@ type SongRepository interface {
 	GetSongsByTags(ctx context.Context, tags map[string]string, filter proto.Filter) ([]*File, error)
 	GetSongsByIDs(ctx context.Context, ids []string) ([]*File, error)
 	GetAllSongs(ctx context.Context) ([]*File, error)
+	AddTags(ctx context.Context, id string, tags map[string]string) error
+	RemoveTags(ctx context.Context, id string, tags map[string]string) error
 }

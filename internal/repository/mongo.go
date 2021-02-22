@@ -12,7 +12,7 @@ import (
 
 const (
 	songCollectionName = "songs"
-	tagsKey            = "tags"
+	tagsPrefix         = "tags."
 	existsCharacter    = "*"
 )
 
@@ -73,11 +73,11 @@ func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]st
 		var filterEntry bson.M
 
 		if val == existsCharacter {
-			filterEntry = bson.M{tagsKey + "." + tagName: bson.M{
+			filterEntry = bson.M{tagsPrefix + tagName: bson.M{
 				"$exists": true,
 			}}
 		} else {
-			filterEntry = bson.M{tagsKey + "." + tagName: val}
+			filterEntry = bson.M{tagsPrefix + tagName: val}
 		}
 
 		tagsEntries = append(tagsEntries, filterEntry)
@@ -152,6 +152,58 @@ func (r *MongoRepository) getSongs(ctx context.Context, query bson.M) ([]*File, 
 	files := r.MongoFilesToFiles(songs)
 
 	return files, nil
+}
+
+func (r *MongoRepository) AddTags(ctx context.Context, id string, tags map[string]string) error {
+	mongoID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		r.logger.Errorf("bad ID: %v", err)
+		return err
+	}
+
+	tagsToSet := make(map[string]string)
+	for tagName, val := range tags {
+		tagsToSet[tagsPrefix+tagName] = val
+	}
+
+	filter := bson.M{
+		"_id": mongoID,
+	}
+	update := bson.M{
+		"$set": tagsToSet,
+	}
+	_, err = r.songCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *MongoRepository) RemoveTags(ctx context.Context, id string, tags map[string]string) error {
+	mongoID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		r.logger.Errorf("bad ID: %v", err)
+		return err
+	}
+
+	tagsToUnset := make(map[string]string)
+	for tagName := range tags {
+		tagsToUnset[tagsPrefix+tagName] = ""
+	}
+
+	filter := bson.M{
+		"_id": mongoID,
+	}
+	update := bson.M{
+		"$unset": tagsToUnset,
+	}
+	_, err = r.songCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *MongoRepository) MongoFilesToFiles(mongoFiles []*MongoFile) []*File {
