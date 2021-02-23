@@ -126,3 +126,25 @@ func TestRemoveTags(t *testing.T) {
 	logger.Infof("%v", res)
 
 }
+
+func TestAddSongs(t *testing.T) {
+
+	logger := zaptest.NewLogger(t).Sugar()
+
+	req := &proto.AddSongsRequest{
+		Songs: []*proto.AddFile{
+			{
+				Name:     "Rock Song",
+				Uri:      "gs://test-tensorbeat-songs/song.mp3",
+				MimeType: "audio/mpeg",
+				Tags: map[string]string{
+					"test": "test",
+				},
+			},
+		},
+	}
+
+	res, _ := datalakeService.AddSongs(ctx, req)
+	logger.Infof("%v", res)
+
+}

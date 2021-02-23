@@ -226,16 +226,22 @@ func (r *MongoRepository) FilesToMongoFiles(files []*File) []*MongoFile {
 
 		id, err := primitive.ObjectIDFromHex(file.ID)
 		if err != nil {
-			r.logger.Errorf("Couldn't convert file interface to mongofile due to bad ID, skipping entry: %v", err)
-			continue
+			mongoFiles = append(mongoFiles, &MongoFile{
+				Name:     file.Name,
+				Uri:      file.Uri,
+				MimeType: file.MimeType,
+				Tags:     file.Tags,
+			})
+		} else {
+			mongoFiles = append(mongoFiles, &MongoFile{
+				ID:       id,
+				Name:     file.Name,
+				Uri:      file.Uri,
+				MimeType: file.MimeType,
+				Tags:     file.Tags,
+			})
 		}
-		mongoFiles = append(mongoFiles, &MongoFile{
-			ID:       id,
-			Name:     file.Name,
-			Uri:      file.Uri,
-			MimeType: file.MimeType,
-			Tags:     file.Tags,
-		})
+
 	}
 	return mongoFiles
 }
