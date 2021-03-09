@@ -65,9 +65,10 @@ func (s *DatalakeServiceServer) ProtoAddFilesToRepoFiles(protoFiles []*proto.Add
 func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetAllSongsRequest) (*proto.GetAllSongsResponse, error) {
 
 	var songs []*repository.File
+	var nextToken int64
 	var err error
 
-	songs, err = s.repo.GetAllSongs(ctx)
+	songs, nextToken, err = s.repo.GetAllSongs(ctx, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -75,16 +76,18 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 	}
 
 	res := &proto.GetAllSongsResponse{
-		Songs: s.RepoFilesToProtoFiles(songs),
+		Songs:     s.RepoFilesToProtoFiles(songs),
+		NextToken: nextToken,
 	}
 	return res, nil
 }
 
 func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.GetSongsByIDsRequest) (*proto.GetSongsByIDsResponse, error) {
 	var songs []*repository.File
+	var nextToken int64
 	var err error
 
-	songs, err = s.repo.GetSongsByIDs(ctx, req.Ids)
+	songs, nextToken, err = s.repo.GetSongsByIDs(ctx, req.Ids, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -92,7 +95,8 @@ func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.Ge
 	}
 
 	res := &proto.GetSongsByIDsResponse{
-		Songs: s.RepoFilesToProtoFiles(songs),
+		Songs:     s.RepoFilesToProtoFiles(songs),
+		NextToken: nextToken,
 	}
 	return res, nil
 }
@@ -100,9 +104,10 @@ func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.Ge
 func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.GetSongsByTagsRequest) (*proto.GetSongsByTagsResponse, error) {
 
 	var songs []*repository.File
+	var nextToken int64
 	var err error
 
-	songs, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Filter)
+	songs, nextToken, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Filter, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -110,7 +115,8 @@ func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.G
 	}
 
 	res := &proto.GetSongsByTagsResponse{
-		Songs: s.RepoFilesToProtoFiles(songs),
+		Songs:     s.RepoFilesToProtoFiles(songs),
+		NextToken: nextToken,
 	}
 	return res, nil
 }
