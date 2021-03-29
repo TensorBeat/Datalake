@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/TensorBeat/Datalake/pkg/proto"
@@ -134,11 +135,14 @@ func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken 
 
 	r.logger.Debugf("query: %v", query)
 
-	var findOptions *options.FindOptions
+	findOptions := options.Find()
 	if pageSize > 0 {
 		findOptions.SetLimit(pageSize)
+	}
+	if pageToken > 0 {
 		findOptions.SetSkip(pageToken)
 	}
+
 	cur, err := r.songCollection.Find(ctx, query, findOptions)
 	if err != nil {
 		r.logger.Errorf("Failed to find songs in mongo: %v", err)

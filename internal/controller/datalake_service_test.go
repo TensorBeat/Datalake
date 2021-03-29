@@ -85,9 +85,9 @@ func TestGetSongsByTags(t *testing.T) {
 
 	req := &proto.GetSongsByTagsRequest{
 		Tags: map[string]string{
-			"genre": "test",
+			"genre": "Hip Hop",
 		},
-		Filter: proto.Filter_NONE,
+		Filter: proto.Filter_ALL,
 	}
 
 	res, _ := datalakeService.GetSongsByTags(ctx, req)
