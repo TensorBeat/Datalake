@@ -20,9 +20,9 @@ type Repository interface {
 
 type SongRepository interface {
 	AddSongs(ctx context.Context, songs []*File) error
-	GetSongsByTags(ctx context.Context, tags map[string]string, filter proto.Filter) ([]*File, error)
-	GetSongsByIDs(ctx context.Context, ids []string) ([]*File, error)
-	GetAllSongs(ctx context.Context) ([]*File, error)
+	GetSongsByTags(ctx context.Context, tags map[string]string, filter proto.Filter, pageToken int64, pageSize int64) ([]*File, int64, error)
+	GetSongsByIDs(ctx context.Context, ids []string, pageToken int64, pageSize int64) ([]*File, int64, error)
+	GetAllSongs(ctx context.Context, pageToken int64, pageSize int64) ([]*File, int64, error)
 	AddTags(ctx context.Context, id string, tags map[string]string) error
 	RemoveTags(ctx context.Context, id string, tags map[string]string) error
 }
