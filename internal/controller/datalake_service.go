@@ -84,8 +84,8 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 	}
 
 	res := &proto.GetAllSongsResponse{
-		Songs:     s.RepoFilesToProtoFiles(songs),
-		NextToken: nextToken,
+		Songs:         s.RepoFilesToProtoFiles(songs),
+		NextPageToken: nextToken,
 	}
 	return res, nil
 }
@@ -111,8 +111,8 @@ func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.Ge
 	}
 
 	res := &proto.GetSongsByIDsResponse{
-		Songs:     s.RepoFilesToProtoFiles(songs),
-		NextToken: nextToken,
+		Songs:         s.RepoFilesToProtoFiles(songs),
+		NextPageToken: nextToken,
 	}
 	return res, nil
 }
@@ -139,8 +139,8 @@ func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.G
 	}
 
 	res := &proto.GetSongsByTagsResponse{
-		Songs:     s.RepoFilesToProtoFiles(songs),
-		NextToken: nextToken,
+		Songs:         s.RepoFilesToProtoFiles(songs),
+		NextPageToken: nextToken,
 	}
 	return res, nil
 }
