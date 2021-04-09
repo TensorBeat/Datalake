@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/TensorBeat/Datalake/pkg/proto"
 	"go.mongodb.org/mongo-driver/bson"
@@ -134,22 +135,32 @@ func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken 
 
 	r.logger.Debugf("query: %v", query)
 
+	findOptions := options.Find()
 	if pageToken < 0 {
 		err := fmt.Errorf("pageToken must be non-negative: %v", pageToken)
 		r.logger.Error(err)
 		return nil, 0, 0, err
+	} else if pageSize > 0 {
+		findOptions.SetLimit(pageSize)
 	}
 
 	if pageSize < 0 {
 		err := fmt.Errorf("pageSize must be non-negative: %v", pageSize)
 		r.logger.Error(err)
 		return nil, pageToken, 0, err
+	} else if pageToken > 0 {
+		findOptions.SetSkip(pageToken)
 	}
 
 	cur, err := r.songCollection.Find(ctx, query)
 	if err != nil {
 		r.logger.Errorf("Failed to find songs in mongo: %v", err)
 		return nil, pageToken, 0, err
+	}
+
+	count, countErr := r.songCollection.CountDocuments(ctx, query)
+	if countErr != nil {
+		r.logger.Errorf("Failed to count songs in mongo: %v", countErr)
 	}
 
 	songs := make([]*MongoFile, 0)
@@ -169,7 +180,7 @@ func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken 
 		files = files[pageToken : pageToken+pageSize]
 	}
 
-	return files, pageToken + pageSize, int64(len(files)), nil
+	return files, pageToken + pageSize, count, nil
 }
 
 func (r *MongoRepository) AddTags(ctx context.Context, id string, tags map[string]string) error {
