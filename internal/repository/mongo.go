@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/TensorBeat/Datalake/pkg/proto"
@@ -67,7 +67,7 @@ func (r *MongoRepository) AddSongs(ctx context.Context, songs []*File) error {
 
 }
 
-func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.Filter, pageToken int64, pageSize int64) ([]*File, int64, error) {
+func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]string, operator proto.Filter, pageToken int64, pageSize int64) ([]*File, int64, int64, error) {
 
 	tagsEntries := make([]bson.M, 0)
 	for tagName, val := range tags {
@@ -108,14 +108,14 @@ func (r *MongoRepository) GetSongsByTags(ctx context.Context, tags map[string]st
 	return r.getSongs(ctx, query, pageToken, pageSize)
 }
 
-func (r *MongoRepository) GetSongsByIDs(ctx context.Context, ids []string, pageToken int64, pageSize int64) ([]*File, int64, error) {
+func (r *MongoRepository) GetSongsByIDs(ctx context.Context, ids []string, pageToken int64, pageSize int64) ([]*File, int64, int64, error) {
 	mongoIDs := make([]primitive.ObjectID, len(ids))
 
 	for i := range mongoIDs {
 		id, err := primitive.ObjectIDFromHex(ids[i])
 		if err != nil {
 			r.logger.Errorf("bad ID: %v", err)
-			return nil, pageToken, err
+			return nil, pageToken, 0, err
 		}
 		mongoIDs[i] = id
 	}
@@ -125,28 +125,42 @@ func (r *MongoRepository) GetSongsByIDs(ctx context.Context, ids []string, pageT
 	return r.getSongs(ctx, query, pageToken, pageSize)
 }
 
-func (r *MongoRepository) GetAllSongs(ctx context.Context, pageToken int64, pageSize int64) ([]*File, int64, error) {
+func (r *MongoRepository) GetAllSongs(ctx context.Context, pageToken int64, pageSize int64) ([]*File, int64, int64, error) {
 
 	return r.getSongs(ctx, bson.M{}, pageToken, pageSize)
 
 }
 
-func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken int64, pageSize int64) ([]*File, int64, error) {
+func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken int64, pageSize int64) ([]*File, int64, int64, error) {
 
 	r.logger.Debugf("query: %v", query)
 
 	findOptions := options.Find()
-	if pageSize > 0 {
+	if pageToken < 0 {
+		err := fmt.Errorf("pageToken must be non-negative: %v", pageToken)
+		r.logger.Error(err)
+		return nil, 0, 0, err
+	} else if pageSize > 0 {
 		findOptions.SetLimit(pageSize)
 	}
-	if pageToken > 0 {
+
+	if pageSize < 0 {
+		err := fmt.Errorf("pageSize must be non-negative: %v", pageSize)
+		r.logger.Error(err)
+		return nil, pageToken, 0, err
+	} else if pageToken > 0 {
 		findOptions.SetSkip(pageToken)
 	}
 
-	cur, err := r.songCollection.Find(ctx, query, findOptions)
+	cur, err := r.songCollection.Find(ctx, query)
 	if err != nil {
 		r.logger.Errorf("Failed to find songs in mongo: %v", err)
-		return nil, pageToken, err
+		return nil, pageToken, 0, err
+	}
+
+	count, countErr := r.songCollection.CountDocuments(ctx, query)
+	if countErr != nil {
+		r.logger.Errorf("Failed to count songs in mongo: %v", countErr)
 	}
 
 	songs := make([]*MongoFile, 0)
@@ -154,14 +168,19 @@ func (r *MongoRepository) getSongs(ctx context.Context, query bson.M, pageToken 
 	cur.All(ctx, &songs)
 	if err != nil {
 		r.logger.Errorf("Failed to get songs in mongo: %v", err)
-		return nil, pageToken, err
+		return nil, pageToken, 0, err
 	}
 
 	r.logger.Debugf("Songs: %v", songs)
 
 	files := r.MongoFilesToFiles(songs)
+	if pageSize == 0 {
+		files = files[pageToken:]
+	} else {
+		files = files[pageToken : pageToken+pageSize]
+	}
 
-	return files, pageToken + pageSize, nil
+	return files, pageToken + pageSize, count, nil
 }
 
 func (r *MongoRepository) AddTags(ctx context.Context, id string, tags map[string]string) error {

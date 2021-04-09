@@ -66,6 +66,7 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 
 	var songs []*repository.File
 	var nextToken int64
+	var totalSize int64
 	var err error
 
 	// TODO refactor this
@@ -76,7 +77,7 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 		req.PageSize = new(int64)
 	}
 
-	songs, nextToken, err = s.repo.GetAllSongs(ctx, *req.PageToken, *req.PageSize)
+	songs, nextToken, totalSize, err = s.repo.GetAllSongs(ctx, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -86,6 +87,7 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 	res := &proto.GetAllSongsResponse{
 		Songs:         s.RepoFilesToProtoFiles(songs),
 		NextPageToken: nextToken,
+		TotalSize:     totalSize,
 	}
 	return res, nil
 }
@@ -93,6 +95,7 @@ func (s *DatalakeServiceServer) GetAllSongs(ctx context.Context, req *proto.GetA
 func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.GetSongsByIDsRequest) (*proto.GetSongsByIDsResponse, error) {
 	var songs []*repository.File
 	var nextToken int64
+	var totalSize int64
 	var err error
 
 	// TODO refactor this
@@ -103,7 +106,7 @@ func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.Ge
 		req.PageSize = new(int64)
 	}
 
-	songs, nextToken, err = s.repo.GetSongsByIDs(ctx, req.Ids, *req.PageToken, *req.PageSize)
+	songs, nextToken, totalSize, err = s.repo.GetSongsByIDs(ctx, req.Ids, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -113,6 +116,7 @@ func (s *DatalakeServiceServer) GetSongsByIDs(ctx context.Context, req *proto.Ge
 	res := &proto.GetSongsByIDsResponse{
 		Songs:         s.RepoFilesToProtoFiles(songs),
 		NextPageToken: nextToken,
+		TotalSize:     totalSize,
 	}
 	return res, nil
 }
@@ -121,6 +125,7 @@ func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.G
 
 	var songs []*repository.File
 	var nextToken int64
+	var totalSize int64
 	var err error
 
 	// TODO refactor this
@@ -131,7 +136,7 @@ func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.G
 		req.PageSize = new(int64)
 	}
 
-	songs, nextToken, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Filter, *req.PageToken, *req.PageSize)
+	songs, nextToken, totalSize, err = s.repo.GetSongsByTags(ctx, req.Tags, req.Filter, *req.PageToken, *req.PageSize)
 
 	if err != nil {
 		s.logger.Errorf("Failed to get songs: %v", err)
@@ -141,6 +146,7 @@ func (s *DatalakeServiceServer) GetSongsByTags(ctx context.Context, req *proto.G
 	res := &proto.GetSongsByTagsResponse{
 		Songs:         s.RepoFilesToProtoFiles(songs),
 		NextPageToken: nextToken,
+		TotalSize:     totalSize,
 	}
 	return res, nil
 }
