@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: datalake
-        image: gcr.io/rowan-senior-project/tensorbeat-datalake:v1.0.1
+        image: gcr.io/rowan-senior-project/tensorbeat-datalake:v1.0.3
         env:
           - name: PORT
             value: "50051"
